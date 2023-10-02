@@ -1,3 +1,4 @@
+
 with open(r"_chat.txt", 'r') as fp:
     text = fp.readlines()
     lines = len(text)
@@ -11,15 +12,23 @@ with open(r"_chat.txt", 'r') as fp:
     deletedmsgcount=0
     Alwinmsg=-1; #since name will be shown once while joining
     message_edited=0
-    d={}
-    
+    message_counts = defaultdict(int)
+    image_count=0
     url_pattern = r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
-    pattern = r'\[([\d/]+, [\d:]+ [APMapm]+)\] (.+?): (.+)'
     link_count=0
+    pattern = r'\[(\d{2}/\d{2}/\d{2}),'
     for line in text:
         if re.search(url_pattern, line):
             link_count += 1
-
+        
+        if "image omitted" in line:
+            image_count += 1
+        
+        match = re.search(pattern, line)
+        if match:
+            date = match.group(1)
+            message_counts[date] += 1
+            
         if "This message was deleted" in line:
             deletedmsgcount+=1
         if "A7WiN✨:" in line:
@@ -27,24 +36,17 @@ with open(r"_chat.txt", 'r') as fp:
         if "<This message was edited>" in line:
             message_edited+=1
         
-        match = re.match(pattern, line)
-        if match:
-            parts = line.split('] ')
-            if len(parts) == 2:
-                timestamp, rest = parts
-                sender, message = rest.split(': ')
-                print(sender)
-                if sender not in d:
-                    d[sender]=1
-                else:
-                    d[sender]+=1
+        
 
 
     print("The total number of messages deleted were:-",deletedmsgcount)
     print("Alwin messaged:-",Alwinmsg,"times")
     print("The number of messages that was edited were:-",message_edited)
     print("Number of links:-",link_count)
-    for i,j in d.items():
-        print(i,j)
+    print(f"Total number of images shared: {image_count}")
+    most_messages_day = max(message_counts, key=message_counts.get)
+    message_count = message_counts[most_messages_day]
+
+    print(f"The day with the most messages is {most_messages_day} with {message_count} messages.")
     
     
